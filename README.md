@@ -26,7 +26,7 @@
 ```javascript 
     const webAudioSpeechRecognizer = new WebAudioSpeechRecognizer();
 ```
-WebAudioSpeechRecognizer 类，提供 start()、stop()和获取识别结果事件，具体调用参考示例以及examples
+  WebAudioSpeechRecognizer 类，提供 start()、stop()和获取识别结果事件，具体调用参考示例以及examples  
 3. 进阶版（自定义数据源）
 ```javascript 
     const speechRecognizer = new SpeechRecognizer();
