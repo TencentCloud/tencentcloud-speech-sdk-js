@@ -1,0 +1,42 @@
+.content-box .content{
+    width: 100%;
+    overflow: hidden;
+    margin: 100px auto;
+}
+.content .content-item {
+    width: 50%;
+    float: left;
+    text-align: center;
+}
+.recognizing {
+    color: #999;
+    margin: 0 10px;
+}
+.content .content-item .button {
+    background: #187cff;
+    border: 1px solid #478eea;
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 160px;
+    height: 40px;
+    margin: 50px 0;
+}
+.button.end-btn {
+    display: none;
+}
+.recognize-content {
+    height: 200px;
+    width: 360px;
+    background-color: #eee;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    margin: auto;
+    text-align: left;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.display-none {
+    display: none;
+}
