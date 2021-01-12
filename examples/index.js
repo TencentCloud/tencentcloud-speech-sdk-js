@@ -11,13 +11,13 @@ $(function () {
     // 以下为非必填参数，可跟据业务自行修改
     voice_format : 1,
     hotword_id : '08003a00000000000000000000000000',
-    needvad: 0,
+    needvad: 1,
     filter_dirty: 1,
     filter_modal: 2,
     filter_punc: 0,
     convert_num_mode : 1,
     word_info: 2,
-    vad_silence_time: 1000
+    vad_silence_time: 200
   }
   $('#start').on('click', function () {
     webAudioSpeechRecognizer = new WebAudioSpeechRecognizer(params);
