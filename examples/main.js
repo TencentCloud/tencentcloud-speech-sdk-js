@@ -10,16 +10,16 @@ $(function () {
         appid: config.appId,
         // 实时识别接口参数
         engine_model_type : '16k_zh', // 引擎
-        voice_format : 1,
         // 以下为非必填参数，可跟据业务自行修改
+        voice_format : 1,
         hotword_id : '08003a00000000000000000000000000',
         needvad: 1,
         filter_dirty: 1,
-        filter_modal: 1,
-        filter_punc: 1,
+        filter_modal: 2,
+        filter_punc: 0,
         convert_num_mode : 1,
         word_info: 2,
-        // vad_silence_time: 240
+        vad_silence_time: 200
     }
     $('#start').on('click', function () {
         const areaDom = $('#recognizeText');
