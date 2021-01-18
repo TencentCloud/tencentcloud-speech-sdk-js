@@ -26,7 +26,7 @@
 ```javascript 
     const webAudioSpeechRecognizer = new WebAudioSpeechRecognizer();
 ```
-  WebAudioSpeechRecognizer 类，提供 start()、stop()和获取识别结果事件，具体调用参考示例以及examples  
+WebAudioSpeechRecognizer 类，提供 start()、stop()和获取识别结果事件，具体调用参考示例以及examples
 3. 进阶版（自定义数据源）
 ```javascript 
     const speechRecognizer = new SpeechRecognizer();
@@ -49,8 +49,7 @@ WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件
 ```javascript 
     // 实例化类
     const recorder = new WebRecorder(); 
-    // 开始录音
-    recorder.start();
+    
     // 获取采集到的音频数据
     recorder.OnReceivedData = (res) => {
         console.log(res);
@@ -59,6 +58,10 @@ WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件
     recorder.OnError() = (err) => {
         console.log(err)
     }
+
+    // 开始录音
+    recorder.start();
+
     // 结束录音
     recorder.stop();
 ```   
@@ -66,13 +69,12 @@ WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件
 ```javascript 
     // 实例化类
     const speechRecognizer = new SpeechRecognizer(params); 
-    // 建立websocket连接
-    speechRecognizer.start();
+    
     if (// 可以开始识别了) { // 此处需要判断是否建立连接成功，可在 OnRecognitionStart 回调中加标识判断
         // 发送数据 (此过程应该是一个连续的过程)
         speechRecognizer.write(data);
     }
-    // 开始识别
+    // 开始识别(此时连接已经建立)
     speechRecognizer.OnRecognitionStart = (res) => {
         console.log('开始识别', res)
     }
@@ -95,18 +97,23 @@ WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件
     // 识别错误
     speechRecognizer.OnError = (res) => {
        console.log('识别失败', res)
-    }   
+    } 
+
+    // 建立websocket连接
+    speechRecognizer.start();
+  
     // 断开连接
-    speechRecognizer.stop();
+    if (连接已经建立...) {
+        speechRecognizer.stop();
+    }
 ```  
     
 3. WebAudioSpeechRecognizer 类
 ```javascript 
     // 实例化类
     const webAudioSpeechRecognizer = new WebAudioSpeechRecognizer(params); 
-    // 建立录音同时建立websocket连接
-    webAudioSpeechRecognizer.start();
-    // 开始识别
+
+    // 开始识别(此时连接已经建立)
     webAudioSpeechRecognizer.OnRecognitionStart = (res) => {
        console.log('开始识别', res)
     }
@@ -130,8 +137,14 @@ WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件
     webAudioSpeechRecognizer.OnError = (res) => {
        console.log('识别失败', res)
     }
+
+    // 建立录音同时建立websocket连接
+    webAudioSpeechRecognizer.start();
+
      // 断开连接
-    webAudioSpeechRecognizer.stop();     
+    if (连接已经建立...) {
+        webAudioSpeechRecognizer.stop();  
+    }   
 ``` 
 具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/examples) 目录，该目录下包含各语音服务的示例代码。  
 

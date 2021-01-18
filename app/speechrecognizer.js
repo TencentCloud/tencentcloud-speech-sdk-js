@@ -96,7 +96,7 @@ export default class SpeechRecognizer {
         if (this.socket && this.socket.readyState === 1) {
           this.socket.send(JSON.stringify({type: 'end'}));
         } else {
-          this.OnError('关闭连接失败');
+          this.OnError('连接未建立或连接已关闭');
           if (this.socket && this.socket.readyState === 1) {
             this.socket.close();
           }

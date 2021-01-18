@@ -1,6 +1,7 @@
 let recorder;
 let speechRecognizer;
 let isCanSendData = false;
+let isCanStop;
 
 $(function () {
     const params = {
@@ -10,23 +11,21 @@ $(function () {
         appid: config.appId,
         // 实时识别接口参数
         engine_model_type : '16k_zh', // 引擎
-        // 以下为非必填参数，可跟据业务自行修改
         voice_format : 1,
+        // 以下为非必填参数，可跟据业务自行修改
         hotword_id : '08003a00000000000000000000000000',
         needvad: 1,
         filter_dirty: 1,
-        filter_modal: 2,
-        filter_punc: 0,
+        filter_modal: 1,
+        filter_punc: 1,
         convert_num_mode : 1,
-        word_info: 2,
-        vad_silence_time: 200
+        word_info: 2
     }
     $('#start').on('click', function () {
         const areaDom = $('#recognizeText');
         let resultText = '';
-        $('#end').show();
         $(this).hide();
-        $('#recognizing').show();
+        $('#connecting').show();
         speechRecognizer = null;
         isCanSendData = false;
         // 获取录音数据
@@ -53,6 +52,10 @@ $(function () {
       speechRecognizer.OnRecognitionStart = (res) => {
         console.log('开始识别', res);
         isCanSendData = true;
+        isCanStop = true;
+        $('#connecting').hide();
+        $('#end').show();
+        $('#recognizing').show();
       };
       // 一句话开始
       speechRecognizer.OnSentenceBegin = (res) => {
@@ -82,7 +85,7 @@ $(function () {
 
         $('#end').hide();
         $('#recognizing').hide();
-        $(this).show();
+        $('#start').show();
       };
 
       // 建立连接
@@ -94,6 +97,8 @@ $(function () {
         $('#start').show();
         $('#recognizing').hide();
         recorder.stop();
-        speechRecognizer.stop();
+        if (isCanStop) {
+          speechRecognizer.stop();
+        }
     });
 });

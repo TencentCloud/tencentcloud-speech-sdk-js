@@ -51,6 +51,7 @@ export default class WebAudioSpeechRecognizer {
     // 识别错误
     this.speechRecognizer.OnError = (res) => {
       this.OnError(res);
+      this.recorder.stop();
       this.isCanSendData = false;
     };
     // 建立连接

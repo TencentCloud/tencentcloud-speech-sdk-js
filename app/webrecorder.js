@@ -30,6 +30,7 @@ export default class WebRecorder {
     if (!WebRecorder.instance) {
       this.audioContext = null;
       WebRecorder.instance = this;
+      this.stream = null;
     }
   }
   start() {
@@ -62,7 +63,7 @@ export default class WebRecorder {
           video: false,
         })
         .then(stream => {
-          getAudioSuccess(stream);
+            getAudioSuccess(stream);
         })
         .catch(e => {
           getAudioFail(e);
@@ -90,6 +91,7 @@ export default class WebRecorder {
       return;
     }
     const getAudioSuccess = (stream) => {
+        this.stream = stream;
         // 将麦克风的声音输入这个对象
         const mediaStreamSource = this.audioContext.createMediaStreamSource(stream); // 将声音对象输入这个对象
         // 创建一个音频分析对象，采样的缓冲区大小为0（自动适配），输入和输出都是单声道
@@ -115,6 +117,15 @@ export default class WebRecorder {
   stop() {
     if (!(/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent))){
       this.audioContext && this.audioContext.suspend();
+    }
+    this.audioContext && this.audioContext.suspend();
+    // 关闭通道
+    if (this.stream) {
+      // this.stream.getTracks()[0].stop();
+      this.stream.getTracks().map((val) => {
+        val.stop();
+      });
+      this.stream = null;
     }
   }
   OnReceivedData(data) { // 获取音频数据

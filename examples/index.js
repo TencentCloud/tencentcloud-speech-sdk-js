@@ -1,5 +1,5 @@
 let webAudioSpeechRecognizer;
-
+let isCanStop;
 $(function () {
   const params = {
     signCallback: signCallback, // 鉴权函数
@@ -16,24 +16,26 @@ $(function () {
     filter_modal: 2,
     filter_punc: 0,
     convert_num_mode : 1,
-    word_info: 2,
-    vad_silence_time: 200
+    word_info: 2
   }
   $('#start').on('click', function () {
     webAudioSpeechRecognizer = new WebAudioSpeechRecognizer(params);
     const areaDom = $('#recognizeText');
     areaDom.text('');
     let resultText = '';
+    $(this).hide();
+    $('#connecting').show();
     // 开始识别
     webAudioSpeechRecognizer.OnRecognitionStart = (res) => {
       console.log('开始识别', res);
-      $('#end').show();
-      $('#recognizing').show();
-      $(this).hide();
     };
     // 一句话开始
     webAudioSpeechRecognizer.OnSentenceBegin = (res) => {
       console.log('一句话开始', res);
+      isCanStop = true;
+      $('#end').show();
+      $('#recognizing').show();
+      $('#connecting').hide();
     };
     // 识别变化时
     webAudioSpeechRecognizer.OnRecognitionResultChange = (res) => {
@@ -54,9 +56,10 @@ $(function () {
     // 识别错误
     webAudioSpeechRecognizer.OnError = (res) => {
       console.log('识别失败', res)
-      $(this).hide();
+      $('#end').hide();
       $('#recognizing').hide();
       $('#start').show();
+      $('#connecting').hide();
     };
     webAudioSpeechRecognizer.start();
   });
@@ -64,6 +67,8 @@ $(function () {
     $(this).hide();
     $('#recognizing').hide();
     $('#start').show();
-    webAudioSpeechRecognizer.stop();
+    if (isCanStop) {
+      webAudioSpeechRecognizer.stop();
+    }
   });
 });
