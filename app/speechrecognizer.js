@@ -147,16 +147,20 @@ export default class SpeechRecognizer {
               return;
             }
             if (response.result) {
+              const res = {
+                ...response.result,
+                voice_id: response.voice_id
+              }
               if (response.result.slice_type === 0) {
-                this.OnSentenceBegin(response.result);
+                this.OnSentenceBegin(res);
                 this.isSentenceBegin = true;
               } else  if (response.result.slice_type === 2) {
                 if (!this.isSentenceBegin) {
-                  this.OnSentenceBegin(response.result);
+                  this.OnSentenceBegin(res);
                 }
-                this.OnSentenceEnd(response.result);
+                this.OnSentenceEnd(res);
               } else {
-                this.OnRecognitionResultChange(response.result);
+                this.OnRecognitionResultChange(res);
               }
             }
           }

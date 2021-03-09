@@ -10221,18 +10221,22 @@ var SpeechRecognizer = /*#__PURE__*/function () {
                     }
 
                     if (response.result) {
+                      var res = _objectSpread(_objectSpread({}, response.result), {}, {
+                        voice_id: response.voice_id
+                      });
+
                       if (response.result.slice_type === 0) {
-                        _this.OnSentenceBegin(response.result);
+                        _this.OnSentenceBegin(res);
 
                         _this.isSentenceBegin = true;
                       } else if (response.result.slice_type === 2) {
                         if (!_this.isSentenceBegin) {
-                          _this.OnSentenceBegin(response.result);
+                          _this.OnSentenceBegin(res);
                         }
 
-                        _this.OnSentenceEnd(response.result);
+                        _this.OnSentenceEnd(res);
                       } else {
-                        _this.OnRecognitionResultChange(response.result);
+                        _this.OnRecognitionResultChange(res);
                       }
                     }
                   }
