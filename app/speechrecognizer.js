@@ -4,7 +4,8 @@ export class NewCredential {
   constructor(query){
     this.config = {
       appid: query.appid,
-      secretid: query.secretid
+      secretid: query.secretid,
+      token: query.token
     };
     this.query = query || null;
   }
@@ -67,6 +68,8 @@ export class NewCredential {
     this.query.hasOwnProperty('convert_num_mode') && (params['convert_num_mode'] = this.query.convert_num_mode);
     this.query.hasOwnProperty('word_info') && (params['word_info'] = this.query.word_info);
     this.query.hasOwnProperty('vad_silence_time') && (params['vad_silence_time'] = this.query.vad_silence_time);
+
+    this.config.token &&  (params['token'] = this.config.token);
 
     return params;
   }

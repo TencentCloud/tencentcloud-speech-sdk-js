@@ -85,6 +85,7 @@ $(function () {
 
         $('#end').hide();
         $('#recognizing').hide();
+        $('#connecting').hide();
         $('#start').show();
       };
 

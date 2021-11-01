@@ -9912,7 +9912,8 @@ var NewCredential = /*#__PURE__*/function () {
 
     this.config = {
       appid: query.appid,
-      secretid: query.secretid
+      secretid: query.secretid,
+      token: query.token
     };
     this.query = query || null;
   }
@@ -10014,9 +10015,10 @@ var NewCredential = /*#__PURE__*/function () {
                 this.query.hasOwnProperty('convert_num_mode') && (params['convert_num_mode'] = this.query.convert_num_mode);
                 this.query.hasOwnProperty('word_info') && (params['word_info'] = this.query.word_info);
                 this.query.hasOwnProperty('vad_silence_time') && (params['vad_silence_time'] = this.query.vad_silence_time);
+                this.config.token && (params['token'] = this.config.token);
                 return _context2.abrupt("return", params);
 
-              case 24:
+              case 25:
               case "end":
                 return _context2.stop();
             }
