@@ -9931,8 +9931,8 @@ var NewCredential = /*#__PURE__*/function () {
       var keys = Object.keys(params);
       keys.sort();
 
-      for (var k in keys) {
-        strParam += "&".concat(keys[k], "=").concat(params[keys[k]]);
+      for (var i = 0, len = keys.length; i < len; i++) {
+        strParam += "&".concat(keys[i], "=").concat(params[keys[i]]);
       }
 
       return "".concat(signStr, "?").concat(strParam.slice(1));

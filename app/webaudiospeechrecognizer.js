@@ -1,6 +1,5 @@
 import WebRecorder from "./webrecorder.js";
 import SpeechRecognizer from "./speechrecognizer.js";
-import '@babel/polyfill';
 
 export default class WebAudioSpeechRecognizer {
   constructor(params) {

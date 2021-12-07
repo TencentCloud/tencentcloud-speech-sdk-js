@@ -18,8 +18,8 @@ export class NewCredential {
     }
     const keys = Object.keys(params);
     keys.sort();
-    for (const k in keys) {
-      strParam += `&${keys[k]}=${params[keys[k]]}`;
+    for (let i = 0, len = keys.length; i < len; i++) {
+      strParam += `&${keys[i]}=${params[keys[i]]}`;
     }
     return `${signStr}?${strParam.slice(1)}`;
   }
