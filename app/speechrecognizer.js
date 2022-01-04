@@ -38,7 +38,7 @@ export class NewCredential {
      return new Promise((resolve, reject)=>{
         try {
           const xhr = new XMLHttpRequest();
-          xhr.open("GET", 'https://asr.cloud.tencent.com/server_time', true);
+          xhr.open("GET", 'http://asr.cloud.tencent.com/server_time', true);
           xhr.send();
           xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {

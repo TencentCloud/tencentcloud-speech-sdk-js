@@ -7,13 +7,27 @@ export default class WebAudioSpeechRecognizer {
     this.recorder = null;
     this.speechRecognizer = null;
     this.isCanSendData = false;
+    this.audioData = [];
+    this.timer = null;
   }
   start() {
     this.recorder = new WebRecorder();
     this.recorder.OnReceivedData = (res) => {
+      this.audioData.push(...new Int8Array(res));
+      const engineModelType = this.params['engine_model_type'].includes('8k') ? 640 : 1280;
       if (this.isCanSendData) {
+        let data = this.audioData.splice(0, engineModelType);
+        let audioData = new Int8Array(data)
+        this.speechRecognizer.write(audioData);
+        if (this.timer) {
+          return false;
+        }
         // 发送数据
-        this.speechRecognizer.write(res);
+        this.timer = setInterval( () => {
+          data = this.audioData.splice(0, engineModelType);
+          audioData = new Int8Array(data)
+          this.speechRecognizer.write(audioData);
+        }, 40)
       }
     };
     // 录音失败时
@@ -52,6 +66,10 @@ export default class WebAudioSpeechRecognizer {
       this.OnError(res);
       this.recorder.stop();
       this.isCanSendData = false;
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     };
     // 建立连接
     this.speechRecognizer.start();
@@ -62,6 +80,10 @@ export default class WebAudioSpeechRecognizer {
     }
     if (this.speechRecognizer) {
       this.speechRecognizer.stop();
+    }
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
     }
   }
   // 开始识别的时候
