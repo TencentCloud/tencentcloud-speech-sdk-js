@@ -27,6 +27,7 @@ class ASR {
     this.OnSentenceEnd = function () {};
     this.OnRecognitionComplete = function () {};
     this.OnError = function () {};
+    this.OnChange = function () {};
   }
   signCallback (signStr) {
     const secretKey = this.secretkey;
@@ -52,14 +53,17 @@ class ASR {
     // 一句话开始
     this.speechRecognizer.OnSentenceBegin = (res) => {
       this.OnSentenceBegin(res);
+      this.OnChange(res);
     };
     // 识别变化时
     this.speechRecognizer.OnRecognitionResultChange = (res) => {
       this.OnRecognitionResultChange(res);
+      this.OnChange(res);
     };
     // 一句话结束
     this.speechRecognizer.OnSentenceEnd = (res) => {
       this.OnSentenceEnd(res);
+      this.OnChange(res);
     };
     // 识别结束
     this.speechRecognizer.OnRecognitionComplete = (res) => {
