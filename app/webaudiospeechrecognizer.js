@@ -15,18 +15,20 @@ export default class WebAudioSpeechRecognizer {
     this.recorder.OnReceivedData = (res) => {
       this.audioData.push(...new Int8Array(res));
       const engineModelType = this.params['engine_model_type'].includes('8k') ? 640 : 1280;
+      if (this.timer) {
+        return false;
+      }
       if (this.isCanSendData) {
         let data = this.audioData.splice(0, engineModelType);
         let audioData = new Int8Array(data)
         this.speechRecognizer.write(audioData);
-        if (this.timer) {
-          return false;
-        }
         // 发送数据
         this.timer = setInterval( () => {
-          data = this.audioData.splice(0, engineModelType);
-          audioData = new Int8Array(data)
-          this.speechRecognizer.write(audioData);
+          if (this.isCanSendData) {
+            data = this.audioData.splice(0, engineModelType);
+            audioData = new Int8Array(data)
+            this.speechRecognizer.write(audioData);
+          }
         }, 40)
       }
     };

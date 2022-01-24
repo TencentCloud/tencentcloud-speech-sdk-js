@@ -1,6 +1,5 @@
 class ASR {
   constructor(options) {
-    this.stream = null;
     this.audioTrack = options.audioTrack;
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.speechRecognizer = null;
@@ -20,6 +19,7 @@ class ASR {
       filter_punc: options.filter_punc,
       convert_num_mode: options.convert_num_mode,
       word_info: options.word_info,
+      token: options.token
     };
     this.OnRecognitionStart = function () {};
     this.OnSentenceBegin = function () {};
@@ -82,14 +82,13 @@ class ASR {
   getAudioData() {
     const mediaStream = new MediaStream();
     mediaStream.addTrack(this.audioTrack);
-    this.stream = mediaStream;
     const mediaStreamSource = this.audioContext.createMediaStreamSource(mediaStream); // 将声音对象输入这个对象
     // 创建一个音频分析对象，采样的缓冲区大小为0（自动适配），输入和输出都是单声道
     const scriptProcessor = this.audioContext.createScriptProcessor(0,1,1);
     scriptProcessor.onaudioprocess = e => {
       // 去处理音频数据
       const inputData = e.inputBuffer.getChannelData(0);
-      const output = to16kHz(inputData);
+      const output = to16kHz(inputData, this.audioContext.sampleRate);
       const audioData = to16BitPCM(output);
       this.audioData.push(...new Int8Array(audioData.buffer));
       if (this.timer) {
@@ -113,25 +112,11 @@ class ASR {
     mediaStreamSource.connect(scriptProcessor);
     scriptProcessor.connect(this.audioContext.destination);
   }
-  recorderStop(audioContext) {
-    if (!(/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent))){
-      audioContext && audioContext.suspend();
-    }
-    audioContext && audioContext.suspend();
-    // 关闭通道
-    if (this.stream) {
-      this.stream.getTracks().map((val) => {
-        val.stop();
-      });
-      this.stream = null;
-    }
-  }
   stop() {
     clearInterval(this.timer);
     this.speechRecognizer.stop();
-    this.recorderStop(this.audioContext);
+    this.audioContext && this.audioContext.suspend();
   }
-
 }
 window.ASR = ASR;
 
@@ -166,9 +151,9 @@ function to16BitPCM(input) {
   }
   return dataView;
 }
-function to16kHz(audioData) {
+function to16kHz(audioData, sampleRate= 44100) {
   const data = new Float32Array(audioData);
-  const fitCount = Math.round(data.length * (16000 / 44100));
+  const fitCount = Math.round(data.length * (16000 / sampleRate));
   const newData = new Float32Array(fitCount);
   const springFactor = (data.length - 1) / (fitCount - 1);
   newData[0] = data[0];

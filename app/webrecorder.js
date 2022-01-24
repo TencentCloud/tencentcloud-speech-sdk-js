@@ -9,9 +9,9 @@ function to16BitPCM(input) {
   }
   return dataView;
 }
-function to16kHz(audioData) {
+function to16kHz(audioData, sampleRate= 44100) {
   const data = new Float32Array(audioData);
-  const fitCount = Math.round(data.length * (16000 / 44100));
+  const fitCount = Math.round(data.length * (16000 / sampleRate));
   const newData = new Float32Array(fitCount);
   const springFactor = (data.length - 1) / (fitCount - 1);
   newData[0] = data[0];
@@ -99,7 +99,7 @@ export default class WebRecorder {
         scriptProcessor.onaudioprocess = e => {
           // 去处理音频数据
           const inputData = e.inputBuffer.getChannelData(0);
-          const output = to16kHz(inputData);
+          const output = to16kHz(inputData, this.audioContext.sampleRate);
           const audioData = to16BitPCM(output);
 
           this.OnReceivedData(audioData.buffer);

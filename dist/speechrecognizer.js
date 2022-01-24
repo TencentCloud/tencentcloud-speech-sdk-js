@@ -9595,23 +9595,25 @@ var WebAudioSpeechRecognizer = /*#__PURE__*/function () {
 
         var engineModelType = _this.params['engine_model_type'].includes('8k') ? 640 : 1280;
 
+        if (_this.timer) {
+          return false;
+        }
+
         if (_this.isCanSendData) {
           var data = _this.audioData.splice(0, engineModelType);
 
           var audioData = new Int8Array(data);
 
-          _this.speechRecognizer.write(audioData);
-
-          if (_this.timer) {
-            return false;
-          } // 发送数据
+          _this.speechRecognizer.write(audioData); // 发送数据
 
 
           _this.timer = setInterval(function () {
-            data = _this.audioData.splice(0, engineModelType);
-            audioData = new Int8Array(data);
+            if (_this.isCanSendData) {
+              data = _this.audioData.splice(0, engineModelType);
+              audioData = new Int8Array(data);
 
-            _this.speechRecognizer.write(audioData);
+              _this.speechRecognizer.write(audioData);
+            }
           }, 40);
         }
       }; // 录音失败时
@@ -9769,8 +9771,9 @@ function to16BitPCM(input) {
 }
 
 function to16kHz(audioData) {
+  var sampleRate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 44100;
   var data = new Float32Array(audioData);
-  var fitCount = Math.round(data.length * (16000 / 44100));
+  var fitCount = Math.round(data.length * (16000 / sampleRate));
   var newData = new Float32Array(fitCount);
   var springFactor = (data.length - 1) / (fitCount - 1);
   newData[0] = data[0];
@@ -9867,7 +9870,7 @@ var WebRecorder = /*#__PURE__*/function () {
         scriptProcessor.onaudioprocess = function (e) {
           // 去处理音频数据
           var inputData = e.inputBuffer.getChannelData(0);
-          var output = to16kHz(inputData);
+          var output = to16kHz(inputData, _this.audioContext.sampleRate);
           var audioData = to16BitPCM(output);
 
           _this.OnReceivedData(audioData.buffer);
@@ -10040,7 +10043,7 @@ var NewCredential = /*#__PURE__*/function () {
                             return _context.abrupt("return", new Promise(function (resolve, reject) {
                               try {
                                 var xhr = new XMLHttpRequest();
-                                xhr.open("GET", 'http://asr.cloud.tencent.com/server_time', true);
+                                xhr.open("GET", 'https://asr.cloud.tencent.com/server_time', true);
                                 xhr.send();
 
                                 xhr.onreadystatechange = function () {
