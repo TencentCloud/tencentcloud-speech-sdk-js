@@ -5,7 +5,6 @@ class ASR {
     this.speechRecognizer = null;
     this.isCanSendData = false;
     this.audioData = [];
-    this.timer = null;
     this.secretkey = options.secretKey;
     this.params = {
       secretid: options.secretId,
@@ -83,37 +82,39 @@ class ASR {
     const mediaStream = new MediaStream();
     mediaStream.addTrack(this.audioTrack);
     const mediaStreamSource = this.audioContext.createMediaStreamSource(mediaStream); // 将声音对象输入这个对象
-    // 创建一个音频分析对象，采样的缓冲区大小为0（自动适配），输入和输出都是单声道
-    const scriptProcessor = this.audioContext.createScriptProcessor(0,1,1);
-    scriptProcessor.onaudioprocess = e => {
-      // 去处理音频数据
-      const inputData = e.inputBuffer.getChannelData(0);
-      const output = to16kHz(inputData, this.audioContext.sampleRate);
-      const audioData = to16BitPCM(output);
-      this.audioData.push(...new Int8Array(audioData.buffer));
-      if (this.timer) {
-        return false;
-      }
-      if (this.isCanSendData) {
-        let data = this.audioData.splice(0, 1280);
-        let audioDataArray = new Int8Array(data)
-        this.speechRecognizer.write(audioDataArray);
-      }
-      // 发送数据
-      this.timer = setInterval( () => {
-        if (this.isCanSendData) {
-          const data = this.audioData.splice(0, 1280);
-          const audioDataArray = new Int8Array(data)
-          this.speechRecognizer.write(audioDataArray);
+    if (this.audioContext.audioWorklet) {
+      this.audioContext.audioWorklet.addModule('./js/audio-worklet.js').then(() => {
+        const myNode = new AudioWorkletNode(this.audioContext, 'my-processor', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
+        myNode.port.onmessage = (event) => {
+          if (this.isCanSendData) {
+            this.speechRecognizer.write(event.data.audioData);
+          }
+        };
+        mediaStreamSource.connect(myNode).connect(this.audioContext.destination);
+      }).catch(console.error);
+    } else {
+      // 创建一个音频分析对象，采样的缓冲区大小为0（自动适配），输入和输出都是单声道
+      const scriptProcessor = this.audioContext.createScriptProcessor(0, 1, 1);
+      scriptProcessor.onaudioprocess = (e) => {
+        // 去处理音频数据
+        const inputData = e.inputBuffer.getChannelData(0);
+        const output = to16kHz(inputData, this.audioContext.sampleRate);
+        const audioData = to16BitPCM(output);
+        this.audioData.push(...new Int8Array(audioData.buffer));
+        if (this.audioData.length > 1280) {
+          if (this.isCanSendData) {
+            const audioDataArray = new Int8Array(this.audioData);
+            this.speechRecognizer.write(audioDataArray);
+            this.audioData = [];
+          }
         }
-      }, 40)
-    };
-    // 连接
-    mediaStreamSource.connect(scriptProcessor);
-    scriptProcessor.connect(this.audioContext.destination);
+      };
+      // 连接
+      mediaStreamSource.connect(scriptProcessor);
+      scriptProcessor.connect(this.audioContext.destination);
+    }
   }
   stop() {
-    clearInterval(this.timer);
     this.speechRecognizer.stop();
     this.audioContext && this.audioContext.suspend();
   }
