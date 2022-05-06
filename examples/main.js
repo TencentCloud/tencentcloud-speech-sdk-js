@@ -64,13 +64,13 @@ $(function () {
       // 识别变化时
       speechRecognizer.OnRecognitionResultChange = (res) => {
         console.log('识别变化时', res);
-        const currentText = `${resultText}${res.voice_text_str}`;
+        const currentText = `${resultText}${res.result.voice_text_str}`;
         areaDom.text(currentText);
       };
       // 一句话结束
       speechRecognizer.OnSentenceEnd = (res) => {
         console.log('一句话结束', res);
-        resultText += res.voice_text_str;
+        resultText += res.result.voice_text_str;
         areaDom.text(resultText);
       };
       // 识别结束

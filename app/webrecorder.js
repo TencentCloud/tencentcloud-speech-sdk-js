@@ -1,3 +1,40 @@
+const audioWorkletCode = `
+class MyProcessor extends AudioWorkletProcessor {
+  constructor(options) {
+    super(options);
+    this.audioData = [];
+    this.nextUpdateFrame = 40;
+  }
+
+  get intervalInFrames() {
+    return 200 / 1000 * sampleRate;
+  }
+
+  process(inputs) {
+    // 去处理音频数据
+    // eslint-disable-next-line no-undef
+    if (inputs[0][0]) {
+      const output = ${to16kHz}(inputs[0][0], sampleRate);
+      const audioData = ${to16BitPCM}(output);
+      const data = [...new Int8Array(audioData.buffer)];
+      this.audioData = this.audioData.concat(data);
+      this.nextUpdateFrame -= inputs[0][0].length;
+      if (this.nextUpdateFrame < 0) {
+        this.nextUpdateFrame += this.intervalInFrames;
+        this.port.postMessage({
+          audioData: new Int8Array(this.audioData)
+        });
+        this.audioData = [];
+      }
+        return true;
+      }
+  }
+}
+
+registerProcessor('my-processor', MyProcessor);
+`;
+const audioWorkletBlobURL = window.URL.createObjectURL(new Blob([audioWorkletCode], { type: 'text/javascript' }));
+
 function to16BitPCM(input) {
   const dataLength = input.length * (16 / 8);
   const dataBuffer = new ArrayBuffer(dataLength);
@@ -27,10 +64,11 @@ function to16kHz(audioData, sampleRate= 44100) {
 }
 export default class WebRecorder {
   constructor() {
+    this.audioData = [];
+    this.stream = null;
+    this.audioContext = null;
     if (!WebRecorder.instance) {
-      this.audioContext = null;
       WebRecorder.instance = this;
-      this.stream = null;
     }
   }
   start() {
@@ -91,23 +129,35 @@ export default class WebRecorder {
       return;
     }
     const getAudioSuccess = (stream) => {
-        this.stream = stream;
-        // 将麦克风的声音输入这个对象
-        const mediaStreamSource = this.audioContext.createMediaStreamSource(stream); // 将声音对象输入这个对象
+      this.stream = stream;
+      const mediaStreamSource = this.audioContext.createMediaStreamSource(this.stream); // 将声音对象输入这个对象
+      if (this.audioContext.audioWorklet) {
+        this.audioContext.audioWorklet.addModule(audioWorkletBlobURL).then(() => {
+          const myNode = new AudioWorkletNode(this.audioContext, 'my-processor', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
+          myNode.port.onmessage = (event) => {
+            this.OnReceivedData(event.data.audioData);
+          };
+          mediaStreamSource.connect(myNode).connect(this.audioContext.destination);
+        })
+          .catch(console.error);
+      } else {
         // 创建一个音频分析对象，采样的缓冲区大小为0（自动适配），输入和输出都是单声道
-        const scriptProcessor = this.audioContext.createScriptProcessor(0,1,1);
-        scriptProcessor.onaudioprocess = e => {
+        const scriptProcessor = this.audioContext.createScriptProcessor(0, 1, 1);
+        scriptProcessor.onaudioprocess = (e) => {
           // 去处理音频数据
           const inputData = e.inputBuffer.getChannelData(0);
           const output = to16kHz(inputData, this.audioContext.sampleRate);
           const audioData = to16BitPCM(output);
-
-          this.OnReceivedData(audioData.buffer);
+          this.audioData.push(...new Int8Array(audioData.buffer));
+          if (this.audioData.length > 6400) {
+            const audioDataArray = new Int8Array(this.audioData);
+            this.OnReceivedData(audioDataArray);
+          }
         };
-
         // 连接
         mediaStreamSource.connect(scriptProcessor);
         scriptProcessor.connect(this.audioContext.destination);
+      }
     };
     const getAudioFail = (err) => {
       this.OnError(err);
@@ -121,7 +171,6 @@ export default class WebRecorder {
     this.audioContext && this.audioContext.suspend();
     // 关闭通道
     if (this.stream) {
-      // this.stream.getTracks()[0].stop();
       this.stream.getTracks().map((val) => {
         val.stop();
       });

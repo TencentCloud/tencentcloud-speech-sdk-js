@@ -12,24 +12,9 @@ export default class WebAudioSpeechRecognizer {
   }
   start() {
     this.recorder = new WebRecorder();
-    this.recorder.OnReceivedData = (res) => {
-      this.audioData.push(...new Int8Array(res));
-      const engineModelType = this.params['engine_model_type'].includes('8k') ? 640 : 1280;
-      if (this.timer) {
-        return false;
-      }
+    this.recorder.OnReceivedData = (data) => {
       if (this.isCanSendData) {
-        let data = this.audioData.splice(0, engineModelType);
-        let audioData = new Int8Array(data)
-        this.speechRecognizer.write(audioData);
-        // 发送数据
-        this.timer = setInterval( () => {
-          if (this.isCanSendData) {
-            data = this.audioData.splice(0, engineModelType);
-            audioData = new Int8Array(data)
-            this.speechRecognizer.write(audioData);
-          }
-        }, 40)
+        this.speechRecognizer.write(data);
       }
     };
     // 录音失败时
