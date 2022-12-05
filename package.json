@@ -17,8 +17,6 @@
     "babel-preset-env": "^1.7.0",
     "cryptojs": "^2.5.3",
     "jquery": "^3.5.1",
-    "webpack": "^3.0.0",
-    "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^2.9.4"
   },
   "dependencies": {
