@@ -152,6 +152,7 @@ export default class WebRecorder {
           if (this.audioData.length > 6400) {
             const audioDataArray = new Int8Array(this.audioData);
             this.OnReceivedData(audioDataArray);
+            this.audioData = [];
           }
         };
         // 连接

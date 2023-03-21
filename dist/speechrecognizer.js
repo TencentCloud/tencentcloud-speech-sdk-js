@@ -9873,6 +9873,8 @@ var WebRecorder = /*#__PURE__*/function () {
               var audioDataArray = new Int8Array(_this.audioData);
 
               _this.OnReceivedData(audioDataArray);
+
+              _this.audioData = [];
             }
           }; // 连接
 
