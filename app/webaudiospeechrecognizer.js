@@ -1,35 +1,51 @@
 import WebRecorder from "./webrecorder.js";
-import SpeechRecognizer from "./speechrecognizer.js";
+import { SpeechRecognizer, guid } from "./speechrecognizer.js";
 
 export default class WebAudioSpeechRecognizer {
-  constructor(params) {
+  constructor(params, isLog) {
     this.params = params;
     this.recorder = null;
     this.speechRecognizer = null;
     this.isCanSendData = false;
     this.audioData = [];
     this.timer = null;
+    this.isLog = isLog;
+    this.requestId = null;
   }
   start() {
-    this.recorder = new WebRecorder();
+    this.isLog && console.log('start function is click');
+    this.requestId = guid();
+    this.recorder = new WebRecorder(this.requestId, this.isLog);
     this.recorder.OnReceivedData = (data) => {
       if (this.isCanSendData) {
-        this.speechRecognizer.write(data);
+        this.speechRecognizer && this.speechRecognizer.write(data);
       }
     };
     // 录音失败时
     this.recorder.OnError = (err) => {
+      this.speechRecognizer && this.speechRecognizer.close();
       this.stop();
       this.OnError(err);
     }
+    this.recorder.OnStop  = (res) => {
+      if (this.speechRecognizer) {
+        this.speechRecognizer.stop();
+        this.speechRecognizer = null;
+      }
+      this.OnRecorderStop(res);
+    }
     this.recorder.start();
     if (!this.speechRecognizer) {
-      this.speechRecognizer = new SpeechRecognizer(this.params);
+      this.speechRecognizer = new SpeechRecognizer(this.params, this.requestId, this.isLog);
     }
     // 开始识别
     this.speechRecognizer.OnRecognitionStart = (res) => {
-      this.OnRecognitionStart(res);
-      this.isCanSendData = true;
+      if (this.recorder) { // 录音正常
+        this.OnRecognitionStart(res);
+        this.isCanSendData = true;
+      } else {
+        this.speechRecognizer && this.speechRecognizer.close();
+      }
     };
     // 一句话开始
     this.speechRecognizer.OnSentenceBegin = (res) => {
@@ -47,55 +63,46 @@ export default class WebAudioSpeechRecognizer {
     this.speechRecognizer.OnRecognitionComplete = (res) => {
       this.OnRecognitionComplete(res);
       this.isCanSendData = false;
+      this.isNormalEndStop = true;
     };
     // 识别错误
     this.speechRecognizer.OnError = (res) => {
-      this.OnError(res);
-      this.recorder.stop();
-      this.isCanSendData = false;
-      if (this.timer) {
-        clearInterval(this.timer);
-        this.timer = null;
+      if (this.speechRecognizer && !this.isNormalEndStop) {
+        this.OnError(res);
       }
+      this.speechRecognizer = null;
+      this.recorder && this.recorder.stop();
+      this.isCanSendData = false;
     };
     // 建立连接
     this.speechRecognizer.start();
   }
   stop() {
+    this.isLog && console.log('stop function is click');
     if (this.recorder) {
       this.recorder.stop();
     }
-    if (this.speechRecognizer) {
-      this.speechRecognizer.stop();
-    }
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
+    // if (this.speechRecognizer) {
+    //   this.speechRecognizer.stop();
+    // }
+  }
+  destroyStream() {
+    this.isLog && console.log('destroyStream function is click', this.recorder);
+    if (this.recorder) {
+      this.recorder.destroyStream();
     }
   }
   // 开始识别的时候
-  OnRecognitionStart(res) {
-
-  }
+  OnRecognitionStart(res) {}
   // 一句话开始的时候
-  OnSentenceBegin(res) {
-
-  }
+  OnSentenceBegin(res) {}
   // 识别结果发生变化的时候
-  OnRecognitionResultChange() {
-
-  }
+  OnRecognitionResultChange() {}
   // 一句话结束的时候
-  OnSentenceEnd() {
-
-  }
+  OnSentenceEnd() {}
   // 识别结束的时候
-  OnRecognitionComplete() {
-
-  }
+  OnRecognitionComplete() {}
   // 识别失败
-  OnError() {
-
-  }
-}
-window && (window.WebAudioSpeechRecognizer = WebAudioSpeechRecognizer);
+  OnError() {}
+  OnRecorderStop() {}
+};

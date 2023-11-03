@@ -1,0 +1,1 @@
+{"server": "http://xcheck.woa.com", "token": "1bbabf40-88ac-421b-9241-92498025832d", "proj-name": "", "proj-dir": "/data/__qci/root-workspaces/__qci-pipeline-10653143-1/tencentcloud-speech-sdk-js", "proj-url": "", "proj-lang": "", "result-type": "json", "output": "output.json", "timeout": 300, "excl-dirs": "", "excl-dir-ptns": "", "diff-files": []}
