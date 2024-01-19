@@ -1,3 +1,4 @@
+import {SpeechRecognizer} from "./speechrecognizer";
 
 export function to16BitPCM(input) {
   const dataLength = input.length * (16 / 8);
@@ -176,8 +177,10 @@ export default class WebRecorder {
       );
     } else {
       if (navigator.userAgent.toLowerCase().match(/chrome/) && location.origin.indexOf('https://') < 0) {
+        this.isLog && console.log(this.requestId, 'chrome下获取浏览器录音功能，因为安全性问题，需要在localhost或127.0.0.1或https下才能获取权限', TAG);
         this.OnError('chrome下获取浏览器录音功能，因为安全性问题，需要在localhost或127.0.0.1或https下才能获取权限');
       } else {
+        this.isLog && console.log(this.requestId, '无法获取浏览器录音功能，请升级浏览器或使用chrome', TAG);
         this.OnError('无法获取浏览器录音功能，请升级浏览器或使用chrome');
       }
       this.audioContext && this.audioContext.close();
@@ -202,6 +205,7 @@ export default class WebRecorder {
         this.scriptNodeDealAudioData(this.mediaStreamSource, requestId);
       }
     } else { // 不支持 MediaStreamSource
+      this.isLog && console.log(this.requestId, '不支持MediaStreamSource', TAG);
       this.OnError('不支持MediaStreamSource');
     }
   }
@@ -209,6 +213,7 @@ export default class WebRecorder {
     if (err && err.err && err.err.name === 'NotAllowedError') {
       this.isLog && console.log(requestId,'授权失败', JSON.stringify(err.err), TAG);
     }
+    this.isLog && console.log(this.requestId, 'getAudioFail', JSON.stringify(err), TAG);
     this.OnError(err);
     this.stop();
   }
@@ -238,7 +243,7 @@ export default class WebRecorder {
         }
       };
     } else { // 不支持
-      this.isLog && console.log(this.requestId, '不支持createScriptProcessor');
+      this.isLog && console.log(this.requestId, '不支持createScriptProcessor', TAG);
     }
   }
   async audioWorkletNodeDealAudioData(mediaStreamSource, requestId) {
@@ -265,6 +270,7 @@ export default class WebRecorder {
       }
       mediaStreamSource &&mediaStreamSource.connect(myNode).connect(this.audioContext.destination);
     } catch (e) {
+      this.isLog && console.log(this.requestId, 'audioWorkletNodeDealAudioData catch error', JSON.stringify(e), TAG);
       this.OnError(e);
     }
   }
@@ -273,3 +279,4 @@ export default class WebRecorder {
   OnError(res) {}
   OnStop(res) {}
 }
+typeof window !== 'undefined' && (window.WebRecorder = WebRecorder);

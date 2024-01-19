@@ -103,7 +103,7 @@ WebAudioSpeechRecognizer 类，提供 start()、stop()和获取识别结果事�
 ```javascript 
     const speechRecognizer = new SpeechRecognizer();
 ```
-SpeechRecognizer类，提供 start()、stop()、write()方法和获取识别结果事件，具体调用参考示例以及examples
+SpeechRecognizer类，提供 start()、stop()、write()方法和获取识别结果事件，具体调用参考示例以及examples，本地调试时，可通过传参开启本地日志打印，
 除此之外，sdk 也提供了 WebRecorder类，可以获取采集到的浏览器数据（目前内置音频只能获取到16KHz的音频）。  
 WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件。
 
@@ -139,8 +139,8 @@ recorder.stop();
 ```   
 2. SpeechRecognizer 类
 ```javascript 
-    // 实例化类
-const speechRecognizer = new SpeechRecognizer(params);
+    // 实例化类 requestId, isLog为可选参数，requestId为本地调试时本地唯一的id,isLog为布尔值，为true时，打印本地日志。
+const speechRecognizer = new SpeechRecognizer(params, requestId, isLog);
 
 if (// 可以开始识别了) { // 此处需要判断是否建立连接成功，可在 OnRecognitionStart 回调中加标识判断
         // 发送数据 (此过程应该是一个连续的过程)
@@ -182,8 +182,8 @@ if (连接已经建立...) {
 
 3. WebAudioSpeechRecognizer 类
 ```javascript 
-    // 实例化类
-const webAudioSpeechRecognizer = new WebAudioSpeechRecognizer(params);
+    // 实例化类 isLog为可选参数，类型为布尔值，当isLog为true时，打印本地日志。
+const webAudioSpeechRecognizer = new WebAudioSpeechRecognizer(params, isLog);
 
 // 开始识别(此时连接已经建立)
 webAudioSpeechRecognizer.OnRecognitionStart = (res) => {
@@ -219,5 +219,5 @@ if (连接已经建立...) {
 }   
 ```
 
-具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/examples) 目录，该目录下包含各语音服务的示例代码。
+具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/tree/main/examples) 目录，该目录下包含各语音服务的示例代码。
 

@@ -12,14 +12,14 @@ $(function () {
     // 实时识别接口参数
     engine_model_type : '16k_zh', // 因为内置WebRecorder采样16k的数据，所以参数 engineModelType 需要选择16k的引擎，为 '16k_zh'
     // 以下为非必填参数，可跟据业务自行修改
-    voice_format : 1,
-    hotword_id : '08003a00000000000000000000000000',
-    needvad: 1,
-    filter_dirty: 1,
-    filter_modal: 2,
-    filter_punc: 0,
-    convert_num_mode : 1,
-    word_info: 2
+    // voice_format : 1,
+    // hotword_id : '08003a00000000000000000000000000',
+    // needvad: 1,
+    // filter_dirty: 1,
+    // filter_modal: 2,
+    // filter_punc: 0,
+    // convert_num_mode : 1,
+    // word_info: 2
   }
   $('#start').on('click', function () {
     webAudioSpeechRecognizer = new WebAudioSpeechRecognizer(params);

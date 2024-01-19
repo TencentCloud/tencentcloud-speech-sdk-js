@@ -1,5 +1,12 @@
-import '../../app/webaudiospeechrecognizer.js';
+import { SpeechRecognizer } from '../../app/speechrecognizer';
 
+export const guid = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = Math.random() * 16 | 0,
+        v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 const audioWorkletCode = `
 class MyProcessor extends AudioWorkletProcessor {
   constructor(options) {
@@ -34,9 +41,9 @@ class MyProcessor extends AudioWorkletProcessor {
 registerProcessor('my-processor', MyProcessor);
 `;
 const audioWorkletBlobURL = window.URL.createObjectURL(new Blob([audioWorkletCode], { type: 'text/javascript' }));
-
+const needFiltrationParams = ['appId', 'secretKey', 'secretId', 'audioTrack'];
 class ASR {
-  constructor(options) {
+  constructor(options, isLog) {
     this.audioTrack = options.audioTrack;
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.speechRecognizer = null;
@@ -44,19 +51,11 @@ class ASR {
     this.audioData = [];
     this.secretkey = options.secretKey;
     this.params = {
+      ...options,
       secretid: options.secretId,
       appid: options.appId,
-      engine_model_type: options.engine_model_type || '16k_zh',
-      voice_format: options.voice_format || 1,
-      hotword_id: options.hotword_id,
-      needvad: options.needvad,
-      filter_dirty: options.filter_dirty,
-      filter_modal: options.filter_modal,
-      filter_punc: options.filter_punc,
-      convert_num_mode: options.convert_num_mode,
-      word_info: options.word_info,
-      token: options.token,
     };
+    this.isLog = isLog;
     this.OnRecognitionStart = function () {};
     this.OnSentenceBegin = function () {};
     this.OnRecognitionResultChange = function () {};
@@ -73,12 +72,18 @@ class ASR {
   }
   start() {
     if (!this.speechRecognizer) {
+      const tempQuery = { ...this.params };
+      for (let i = 0, len = needFiltrationParams.length; i < len; i++) {
+        if (tempQuery.hasOwnProperty(needFiltrationParams[i])) {
+          delete tempQuery[needFiltrationParams[i]];
+        }
+      }
       const params = {
         // 用户参数
         signCallback: this.signCallback.bind(this),
-        ...this.params,
+        ...tempQuery,
       };
-      this.speechRecognizer = new SpeechRecognizer(params);
+      this.speechRecognizer = new SpeechRecognizer(params, guid(), this.isLog);
     }
 
     // 开始识别

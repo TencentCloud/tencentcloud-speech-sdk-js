@@ -1,5 +1,8 @@
 import '../examples/lib/cryptojs.js';
 
+// 识别需要过滤的参数
+const needFiltrationParams = ['appid', 'secretkey', 'signCallback'];
+
 function formatSignString(query, params){
     let strParam = "";
     let signStr = "asr.cloud.tencent.com/asr/v2/";
@@ -14,7 +17,7 @@ function formatSignString(query, params){
     return `${signStr}?${strParam.slice(1)}`;
 }
 async function createQuery(query){
-    const params = {};
+    let params = {};
     const time = new Date().getTime();
 
     async function getServerTime(){
@@ -40,26 +43,19 @@ async function createQuery(query){
     params['expired'] = Math.round(time / 1000) + 24 * 60 * 60;
     params['nonce'] = Math.round(time / 100000);
     params['voice_id'] = guid();
+    params['voice_format'] = query.voice_format || 1;
 
-    // 非必填参数
-    query.hasOwnProperty('voice_format') && (params['voice_format'] = query.voice_format);
-    query.hasOwnProperty('hotword_id') && (params['hotword_id'] = query.hotword_id);
-    query.hasOwnProperty('needvad') && (params['needvad'] = query.needvad);
-    query.hasOwnProperty('filter_dirty') && (params['filter_dirty'] = query.filter_dirty);
-    query.hasOwnProperty('filter_modal') && (params['filter_modal'] = query.filter_modal);
-    query.hasOwnProperty('filter_punc') && (params['filter_punc'] = query.filter_punc);
-    query.hasOwnProperty('convert_num_mode') && (params['convert_num_mode'] = query.convert_num_mode);
-    query.hasOwnProperty('word_info') && (params['word_info'] = query.word_info);
-    query.hasOwnProperty('vad_silence_time') && (params['vad_silence_time'] = query.vad_silence_time);
-    query.hasOwnProperty('max_speak_time') && (params['max_speak_time'] = query.max_speak_time);
-    query.hasOwnProperty('token') && (params['token'] = query.token);
-
-    // 处理extendParams
-    if (typeof query.extend_params !== null) {
-        for (let item in query.extend_params) {
-            params[item] = query.extend_params[item];
+    const tempQuery = { ...query };
+    for (let i = 0, len = needFiltrationParams.length; i < len; i++) {
+        if (tempQuery.hasOwnProperty(needFiltrationParams[i])) {
+            delete tempQuery[needFiltrationParams[i]];
         }
     }
+
+    params = {
+        ...tempQuery,
+        ...params,
+    };
     return params;
 }
 
@@ -73,6 +69,7 @@ export const guid = () => {
 // 获取签名原文
 async function getUrl(self, params) {
     if (!params.appid || !params.secretid) {
+        self.isLog && console.log(self.requestId, '请确认是否填入账号信息', TAG);
         self.OnError('请确认是否填入账号信息');
         return false;
     }
@@ -138,7 +135,7 @@ export class SpeechRecognizer {
             this.socket.send(JSON.stringify({type: 'end'}));
             this.isRecognizeComplete = true;
         } else {
-            this.OnError({ code : 6003, message: '连接未建立或连接已关闭' });
+            // this.OnError({ code : 6003, message: '连接未建立或连接已关闭' });
             if (this.socket && this.socket.readyState === 1) {
                 this.socket.close();
             }
@@ -150,6 +147,7 @@ export class SpeechRecognizer {
         this.getMessageList = [];
         const url = await getUrl(this, this.query);
         if (!url) {
+            this.isLog && console.log(this.requestId, '鉴权失败', TAG);
             this.OnError('鉴权失败');
             return
         }
@@ -159,6 +157,7 @@ export class SpeechRecognizer {
         } else if ('MozWebSocket' in window) {
             this.socket = new MozWebSocket(url);
         } else {
+            this.isLog && console.log(this.requestId, '浏览器不支持WebSocket', TAG);
             this.OnError('浏览器不支持WebSocket');
             return
         }
@@ -173,6 +172,7 @@ export class SpeechRecognizer {
                     if (this.socket.readyState === 1) {
                         this.socket.close();
                     }
+                    this.isLog && console.log(this.requestId, JSON.stringify(response), TAG);
                     this.OnError(response);
                 } else {
                     if (!this.isSignSuccess) {
@@ -196,6 +196,7 @@ export class SpeechRecognizer {
                             this.OnRecognitionResultChange(response);
                         }
                     }
+                    this.isLog && console.log(this.requestId, response, TAG);
                 }
             } catch (e) {
                 this.isLog && console.log(this.requestId, 'socket.onmessage catch error', JSON.stringify(e), TAG);
@@ -230,7 +231,7 @@ export class SpeechRecognizer {
                         this.socket.send(data);
                     }
                 }, 40);
-                this.OnError({ code : 6001, message: '连接未建立，请稍后发送数据！' });
+                // this.OnError({ code : 6001, message: '连接未建立，请稍后发送数据！' });
             }
             this.sendCount += 1;
             this.socket.send(data);
@@ -263,3 +264,4 @@ export class SpeechRecognizer {
 
     }
 }
+typeof window !== 'undefined' && (window.SpeechRecognizer = SpeechRecognizer);
