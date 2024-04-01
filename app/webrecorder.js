@@ -69,7 +69,6 @@ class MyProcessor extends AudioWorkletProcessor {
 
 registerProcessor('my-processor', MyProcessor);
 `;
-const audioWorkletBlobURL = window.URL.createObjectURL(new Blob([audioWorkletCode], { type: 'text/javascript' }));
 const TAG = 'WebRecorder';
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia
     || navigator.mozGetUserMedia || navigator.msGetUserMedia;
@@ -248,6 +247,7 @@ export default class WebRecorder {
   }
   async audioWorkletNodeDealAudioData(mediaStreamSource, requestId) {
     try {
+      const audioWorkletBlobURL = window.URL.createObjectURL(new Blob([audioWorkletCode], { type: 'text/javascript' }));
       await this.audioContext.audioWorklet.addModule(audioWorkletBlobURL);
       const myNode = new AudioWorkletNode(this.audioContext, 'my-processor', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
       myNode.onprocessorerror = (event) => {

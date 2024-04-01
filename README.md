@@ -83,6 +83,16 @@
   2）将获取到的 tmpSecretId、tmpSecretkey 和 Token 依次作为参数 secretid、secretkey 和 token传入
 
 
+# 项目目录介绍
+
+1. app目录为源码，分别是：  
+    1）webrecorder.js —— 录音  
+    2）speechrecognizer.js —— 识别  
+    3）webaudiospeechrecognizer.js —— 录音+识别
+2. dist目录为压缩后的文件
+3. examples目录为demo目录
+
+
 # 获取demo安装  项目启动
 
 1. git clone https://github.com/TencentCloud/tencentcloud-speech-sdk-js.git
@@ -217,6 +227,12 @@ webAudioSpeechRecognizer.start();
 if (连接已经建立...) {
    webAudioSpeechRecognizer.stop();
 }   
+
+// 调用stop方法后不会主动关闭通道，如果需要关闭通道的话，可以调用destroyStream方法
+if (webAudioSpeechRecognizer) {
+    webAudioSpeechRecognizer.destroyStream();
+}
+
 ```
 
 具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/tree/main/examples) 目录，该目录下包含各语音服务的示例代码。
