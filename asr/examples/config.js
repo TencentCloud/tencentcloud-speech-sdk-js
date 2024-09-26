@@ -1,7 +1,7 @@
 let config = {
   secretKey: '',
   secretId: '',
-  appId: 0,
+  appId: '',
 }
 window.config = config
 
