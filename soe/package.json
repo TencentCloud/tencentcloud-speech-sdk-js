@@ -1,0 +1,31 @@
+{
+  "name": "soenew-sdk-js",
+  "version": "1.0.0",
+  "description": "口语评测新版web sdk",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cross-env NODE_ENV=production webpack --progress",
+    "start": "webpack serve --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "",
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  },
+  "dependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "cross-env": "^7.0.3",
+    "crypto-js": "^4.2.0",
+    "path": "^0.12.7",
+    "ts-loader": "^9.5.1",
+    "uglifyjs-webpack-plugin": "^2.2.0"
+  }
+}

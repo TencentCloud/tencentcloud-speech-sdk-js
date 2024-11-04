@@ -12,29 +12,26 @@ class MyProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super(options);
     this.audioData = [];
-    this.nextUpdateFrame = 40;
-  }
-
-  get intervalInFrames() {
-    return 40 / 1000 * sampleRate;
+    this.preTime = 0;
   }
 
   process(inputs) {
     // 去处理音频数据
     // eslint-disable-next-line no-undef
-    const output = ${to16kHz}(inputs[0][0], sampleRate);
-    const audioData = ${to16BitPCM}(output);
-    const data = [...new Int8Array(audioData.buffer)];
-    this.audioData = this.audioData.concat(data);
-    this.nextUpdateFrame -= inputs[0][0].length;
-    if (this.nextUpdateFrame < 0) {
-      this.nextUpdateFrame += this.intervalInFrames;
-      this.port.postMessage({
-        audioData: new Int8Array(this.audioData)
-      });
-      this.audioData = [];
-    }
-    return true;
+    if (inputs[0][0]) {
+      const output = ${to16kHz}(inputs[0][0], sampleRate);
+      const audioData = ${to16BitPCM}(output);
+      const data = [...new Int8Array(audioData.buffer)];
+      this.audioData = this.audioData.concat(data);
+      if (new Date().getTime() - this.preTime > 100) {
+        this.port.postMessage({
+          audioData: new Int8Array(this.audioData)
+        });
+        this.preTime = new Date().getTime();
+        this.audioData = [];
+      }
+        return true;
+      }
   }
 }
 
@@ -144,10 +141,11 @@ class ASR {
         const output = to16kHz(inputData, this.audioContext.sampleRate);
         const audioData = to16BitPCM(output);
         this.audioData.push(...new Int8Array(audioData.buffer));
-        if (this.audioData.length > 1280) {
+        if (new Date().getTime() - this.preTime > 100) {
           if (this.isCanSendData) {
             const audioDataArray = new Int8Array(this.audioData);
             this.speechRecognizer.write(audioDataArray);
+            this.preTime = new Date().getTime();
             this.audioData = [];
           }
         }

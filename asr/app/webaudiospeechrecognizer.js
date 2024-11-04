@@ -16,7 +16,7 @@ export default class WebAudioSpeechRecognizer {
     try {
       this.isLog && console.log('start function is click');
       this.requestId = guid();
-      this.recorder = new WebRecorder(this.requestId, this.isLog);
+      this.recorder = new WebRecorder(this.requestId, this.params, this.isLog);
       this.recorder.OnReceivedData = (data) => {
         if (this.isCanSendData) {
           this.speechRecognizer && this.speechRecognizer.write(data);
@@ -86,9 +86,6 @@ export default class WebAudioSpeechRecognizer {
     if (this.recorder) {
       this.recorder.stop();
     }
-    // if (this.speechRecognizer) {
-    //   this.speechRecognizer.stop();
-    // }
   }
   destroyStream() {
     this.isLog && console.log('destroyStream function is click', this.recorder);
@@ -110,3 +107,4 @@ export default class WebAudioSpeechRecognizer {
   OnError() {}
   OnRecorderStop() {}
 };
+typeof window !== 'undefined' && (window.WebAudioSpeechRecognizer = WebAudioSpeechRecognizer);

@@ -1,7 +1,7 @@
 import '../examples/lib/cryptojs.js';
 
 // 识别需要过滤的参数
-const needFiltrationParams = ['appid', 'secretkey', 'signCallback'];
+const needFiltrationParams = ['appid', 'secretkey', 'signCallback', 'echoCancellation'];
 
 function formatSignString(query, params){
     let strParam = "";
@@ -220,18 +220,18 @@ export class SpeechRecognizer {
         }
     }
     close() {
-        this.socket && this.socket.close(1000);
+        this.socket && this.socket.readyState === 1 && this.socket.close(1000);
     }
     // 发送数据
     write(data) {
         try {
             if (!this.socket || String(this.socket.readyState) !== '1') {
                 setTimeout(() => {
-                    if (!this.socket || this.socket.readyState !== 1) {
+                    if (this.socket && this.socket.readyState === 1) {
                         this.socket.send(data);
                     }
-                }, 40);
-                // this.OnError({ code : 6001, message: '连接未建立，请稍后发送数据！' });
+                }, 100);
+                return false;
             }
             this.sendCount += 1;
             this.socket.send(data);

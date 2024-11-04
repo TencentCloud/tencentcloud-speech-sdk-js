@@ -1,5 +1,3 @@
-import {SpeechRecognizer} from "./speechrecognizer";
-
 export function to16BitPCM(input) {
   const dataLength = input.length * (16 / 8);
   const dataBuffer = new ArrayBuffer(dataLength);
@@ -33,13 +31,9 @@ class MyProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super(options);
     this.audioData = [];
-    this.nextUpdateFrame = 40;
     this.sampleCount = 0;
     this.bitCount = 0;
-  }
-
-  get intervalInFrames() {
-    return 40 / 1000 * sampleRate;
+    this.preTime = 0;
   }
 
   process(inputs) {
@@ -52,14 +46,13 @@ class MyProcessor extends AudioWorkletProcessor {
       this.bitCount += 1;
       const data = [...new Int8Array(audioData.buffer)];
       this.audioData = this.audioData.concat(data);
-      this.nextUpdateFrame -= inputs[0][0].length;
-      if (this.nextUpdateFrame < 0) {
-        this.nextUpdateFrame += this.intervalInFrames;
+      if (new Date().getTime() - this.preTime > 100) {
         this.port.postMessage({
           audioData: new Int8Array(this.audioData),
           sampleCount: this.sampleCount,
           bitCount: this.bitCount
         });
+        this.preTime = new Date().getTime();
         this.audioData = [];
       }
         return true;
@@ -75,7 +68,7 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia
 
 
 export default class WebRecorder {
-  constructor(requestId, isLog) {
+  constructor(requestId, params, isLog) {
     this.audioData = [];
     this.allAudioData = [];
     this.stream = null;
@@ -87,6 +80,7 @@ export default class WebRecorder {
     this.bitCount = 0;
     this.mediaStreamSource = null;
     this.isLog = isLog;
+    this.params = params;
   }
   static isSupportMediaDevicesMedia() {
     return !!(navigator.getUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
@@ -118,6 +112,7 @@ export default class WebRecorder {
     this.audioContext = null;
     this.mediaStreamSource = null;
     this.stream = null;
+    this.preTime = 0;
     try {
       if (WebRecorder.isSupportAudioContext()) {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -149,8 +144,16 @@ export default class WebRecorder {
     }
   }
   async getUserMedia(requestId, getStreamAudioSuccess, getStreamAudioFail) {
+    let audioOption = {
+      echoCancellation: true,
+    };
+    if (this.params && String(this.params.echoCancellation) === 'false') { // 关闭回声消除
+      audioOption = {
+        echoCancellation: false,
+      };
+    }
     const mediaOption = {
-      audio: true,
+      audio: audioOption,
       video: false,
     };
     // 获取用户的麦克风
@@ -231,9 +234,10 @@ export default class WebRecorder {
         const audioData = to16BitPCM(output);
         this.audioData.push(...new Int8Array(audioData.buffer));
         this.allAudioData.push(...new Int8Array(audioData.buffer));
-        if (this.audioData.length > 1280) {
+        if (new Date().getTime() - this.preTime > 100) {
           this.frameTime.push(`${Date.now()}-${this.frameCount}`);
           this.frameCount += 1;
+          this.preTime = new Date().getTime();
           const audioDataArray = new Int8Array(this.audioData);
           this.OnReceivedData(audioDataArray);
           this.audioData = [];

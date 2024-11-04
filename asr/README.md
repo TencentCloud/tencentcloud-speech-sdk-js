@@ -1,6 +1,6 @@
 # 简介
 
-欢迎使用腾讯云语音SDK，腾讯云语音SDK为开发者提供了访问腾讯云语音识别等语音服务的配套开发工具，简化腾讯云语音服务的接入流程。
+欢迎使用腾讯云语音SDK，腾讯云语音SDK为开发者提供了访问腾讯云语音识别、语音合成等语音服务的配套开发工具，简化腾讯云语音服务的接入流程。
 
 本项目是腾讯云语音SDK的JS语言版本。
 
@@ -235,5 +235,5 @@ if (webAudioSpeechRecognizer) {
 
 ```
 
-具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/tree/main/asr/examples) 目录，该目录下包含各语音服务的示例代码。
+具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/tree/main/examples) 目录，该目录下包含各语音服务的示例代码。
 
