@@ -190,6 +190,7 @@ export class SpeechRecognizer {
                         } else  if (response.result.slice_type === 2) {
                             if (!this.isSentenceBegin) {
                                 this.OnSentenceBegin(response);
+                                this.OnRecognitionResultChange(response);
                             }
                             this.OnSentenceEnd(response);
                         } else {
