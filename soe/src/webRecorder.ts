@@ -33,7 +33,9 @@ class MyProcessor extends AudioWorkletProcessor {
 
 registerProcessor('my-processor', MyProcessor);
 `;
-const audioWorkletBlobURL = window.URL.createObjectURL(new Blob([audioWorkletCode], { type: 'text/javascript' }));
+const audioWorkletBlobURL = window.URL.createObjectURL(
+  new Blob([audioWorkletCode], { type: "text/javascript" })
+);
 
 function to16BitPCM(input: any) {
   const dataLength = input.length * (16 / 8);
@@ -46,7 +48,7 @@ function to16BitPCM(input: any) {
   }
   return dataView;
 }
-function to16kHz(audioData: any, sampleRate= 44100) {
+function to16kHz(audioData: any, sampleRate = 44100) {
   const data = new Float32Array(audioData);
   const fitCount = Math.round(data.length * (16000 / sampleRate));
   const newData = new Float32Array(fitCount);
@@ -67,33 +69,46 @@ export default class WebRecorder {
   stream: any;
   audioContext: any;
   static instance: any;
-  constructor() {
+  isLog: boolean;
+  logServer: any;
+  requestId: string;
+  allAudioData: any;
+  constructor(isLog: boolean = false, logServer: any, requestId: string = "") {
     this.audioData = [];
     this.stream = null;
     this.audioContext = null;
     if (!WebRecorder.instance) {
       WebRecorder.instance = this;
     }
+    this.isLog = isLog;
+    this.logServer = logServer;
+    this.requestId = requestId;
+    this.allAudioData = [];
   }
   start() {
+    this.allAudioData = [];
     if (this.audioContext) {
-      this.OnError('录音已开启');
+      this.OnError("录音已开启");
       return;
     }
     const navigator = (window as any).navigator;
-    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia
-      || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+    navigator.getUserMedia =
+      navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.msGetUserMedia;
 
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
       this.audioContext.resume();
       if (!this.audioContext) {
-        this.OnError('浏览器不支持webAudioApi相关接口');
+        this.OnError("浏览器不支持webAudioApi相关接口");
         return;
       }
     } catch (e) {
       if (!this.audioContext) {
-        this.OnError('浏览器不支持webAudioApi相关接口');
+        this.OnError("浏览器不支持webAudioApi相关接口");
         return;
       }
     }
@@ -106,7 +121,7 @@ export default class WebRecorder {
           video: false,
         })
         .then((stream: any) => {
-            getAudioSuccess(stream);
+          getAudioSuccess(stream);
         })
         .catch((e: any) => {
           getAudioFail(e);
@@ -117,43 +132,64 @@ export default class WebRecorder {
           audio: true,
           video: false,
         },
-        (        stream: any) => {
+        (stream: any) => {
           getAudioSuccess(stream);
         },
-        function(e: any) {
+        function (e: any) {
           getAudioFail(e);
         }
       );
     } else {
-      if (navigator.userAgent.toLowerCase().match(/chrome/) && location.origin.indexOf('https://') < 0) {
-        this.OnError('chrome下获取浏览器录音功能，因为安全性问题，需要在localhost或127.0.0.1或https下才能获取权限');
+      if (
+        navigator.userAgent.toLowerCase().match(/chrome/) &&
+        location.origin.indexOf("https://") < 0
+      ) {
+        this.OnError(
+          "chrome下获取浏览器录音功能，因为安全性问题，需要在localhost或127.0.0.1或https下才能获取权限"
+        );
       } else {
-        this.OnError('无法获取浏览器录音功能，请升级浏览器或使用chrome');
+        this.OnError("无法获取浏览器录音功能，请升级浏览器或使用chrome");
       }
       this.audioContext && this.audioContext.close();
       return;
     }
     const getAudioSuccess = (stream: any) => {
       this.stream = stream;
-      const mediaStreamSource = this.audioContext.createMediaStreamSource(this.stream); // 将声音对象输入这个对象
+      const mediaStreamSource = this.audioContext.createMediaStreamSource(
+        this.stream
+      ); // 将声音对象输入这个对象
       if (this.audioContext.audioWorklet) {
-        this.audioContext.audioWorklet.addModule(audioWorkletBlobURL).then(() => {
-          const myNode = new AudioWorkletNode(this.audioContext, 'my-processor', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
-          myNode.port.onmessage = (event) => {
-            this.OnReceivedData(event.data.audioData);
-          };
-          mediaStreamSource.connect(myNode).connect(this.audioContext.destination);
-        })
-          .catch(console.error);
+        this.audioContext.audioWorklet
+          .addModule(audioWorkletBlobURL)
+          .then(() => {
+            const myNode = new AudioWorkletNode(
+              this.audioContext,
+              "my-processor",
+              { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 }
+            );
+            myNode.port.onmessage = (event) => {
+              this.OnReceivedData(event.data.audioData);
+              this.allAudioData.push(...event.data.audioData);
+            };
+            mediaStreamSource
+              .connect(myNode)
+              .connect(this.audioContext.destination);
+          })
+          .catch((err: any) => this.OnError(err));
       } else {
         // 创建一个音频分析对象，采样的缓冲区大小为0（自动适配），输入和输出都是单声道
-        const scriptProcessor = this.audioContext.createScriptProcessor(0, 1, 1);
+        const scriptProcessor = this.audioContext.createScriptProcessor(
+          0,
+          1,
+          1
+        );
         scriptProcessor.onaudioprocess = (e: any) => {
           // 去处理音频数据
           const inputData = e.inputBuffer.getChannelData(0);
           const output = to16kHz(inputData, this.audioContext.sampleRate);
           const audioData = to16BitPCM(output);
           this.audioData.push(...new Int8Array(audioData.buffer));
+          this.allAudioData.push(...new Int8Array(audioData.buffer));
           if (this.audioData.length > 6400) {
             const audioDataArray = new Int8Array(this.audioData);
             this.OnReceivedData(audioDataArray);
@@ -171,7 +207,12 @@ export default class WebRecorder {
     };
   }
   stop() {
-    if (!(/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent))){
+    if (
+      !(
+        /Safari/.test(navigator.userAgent) &&
+        !/Chrome/.test(navigator.userAgent)
+      )
+    ) {
       this.audioContext && this.audioContext.suspend();
     }
     this.audioContext && this.audioContext.suspend();
@@ -182,12 +223,13 @@ export default class WebRecorder {
       });
       this.stream = null;
     }
+    this.OnStop(this.allAudioData);
   }
-  OnReceivedData(data: any) { // 获取音频数据
+  OnReceivedData(data: any) {
+    // 获取音频数据
+  }
+  OnError(res: any) {}
 
-  }
-  OnError(res: any) {
-
-  }
+  OnStop(res: any) {}
 }
 window && ((window as any).WebRecorder = WebRecorder);

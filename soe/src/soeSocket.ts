@@ -9,7 +9,9 @@ export default class SoeNewConnect {
   isRecognizeComplete: boolean;
   isSentenceBegin: boolean;
   query: any;
-  constructor(query: any) {
+  isLog: boolean;
+  logServer: any;
+  constructor(query: any, isLog: boolean = false, logServer: any) {
     this.appid = query.appid || "";
     this.secretid = query.secretid || "";
     this.secretkey = query.secretkey || "";
@@ -19,6 +21,8 @@ export default class SoeNewConnect {
     // 用户鉴权函数
     this.isRecognizeComplete = false; // 当前是否识别结束
     this.query = query;
+    this.isLog = isLog;
+    this.logServer = logServer;
   }
   // 签名函数示例
   signCallback(signStr: string) {
@@ -34,7 +38,7 @@ export default class SoeNewConnect {
     if (this.socket && this.socket.readyState === 1) {
       this.socket.send(JSON.stringify({ type: "end" }));
     } else {
-      this.OnError("连接未建立或连接已关闭");
+      // this.OnError("连接未建立或连接已关闭");
       if (this.socket && this.socket.readyState === 1) {
         this.socket.close();
       }
@@ -45,8 +49,8 @@ export default class SoeNewConnect {
     if (!this.appid || !this.secretid) {
     }
     const soe = new SoeNewCredential(this.query);
-    const signStr = await soe.getSignStr();
-    return `${signStr}&signature=${encodeURIComponent(
+    const { urlStr, signStr } = await soe.getSignStr();
+    return `${urlStr}&signature=${encodeURIComponent(
       this.signCallback(signStr)
     )}`;
   }
@@ -84,12 +88,12 @@ export default class SoeNewConnect {
           }
         }
       };
-      this.socket.onerror = (e) => {
+      this.socket.onerror = (e: any) => {
         // 通信发生错误时触发
         this.socket?.close();
         this.OnError(e);
       };
-      this.socket.onclose = (event) => {
+      this.socket.onclose = (event: any) => {
         if (!this.isRecognizeComplete) {
           this.OnError(event);
         }
@@ -106,12 +110,8 @@ export default class SoeNewConnect {
   }
   // 开始识别的时候
   OnEvaluationStart(res: any) {}
-  // 一句话开始的时候
-  OnSentenceBegin(res: any) {}
   // 识别结果发生变化的时候
   OnEvaluationResultChange(res: any) {}
-  // 一句话结束的时候
-  OnSentenceEnd(res: any) {}
   // 识别结束的时候
   OnEvaluationComplete(res: any) {}
   // 识别失败
@@ -121,6 +121,13 @@ export default class SoeNewConnect {
     this.socket && this.socket.close(1000);
     return;
     // }
+  }
+  async OndownloadLogs() {
+    if (!this.logServer) {
+      return;
+    }
+    const res = await this.logServer.QueryLog();
+    return res;
   }
 }
 
