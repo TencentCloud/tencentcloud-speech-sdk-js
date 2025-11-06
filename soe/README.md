@@ -27,10 +27,9 @@ secretKey 用于加密签名字符串和服务器端验证签名字符串的密�
 
 ## 口语评测（websocket）
 
-1)获取实时录音评测管理器**speechEvaluationManager**
-const speechEvaluationManager = new window.SowNewSocketSdk(params);
+1)获取实时录音评测管理器**SowNewSocketSdk**
 
-**speechEvaluationManager 对象的方法列表：**
+**SowNewSocketSdk类 的方法列表：**
 
 | 方法                     |   参数   | 说明                       |
 | :----------------------- | :------: | :------------------------- |
@@ -101,9 +100,8 @@ const speechEvaluationManager = new window.SowNewSocketSdk(params);
 ```
 
 2)若需要自己处理音频，只调用评测功能，可使用**SoeNewConnect**
-const evaluationManager = new window.SoeNewConnect();
 
-**evaluationManager 对象的方法列表：**
+**SoeNewConnect 类的方法列表：**
 
 | 方法                     |   参数   | 说明             |
 | :----------------------- | :------: | :--------------- |
