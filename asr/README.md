@@ -96,7 +96,7 @@
 # 获取demo安装  项目启动
 
 1. git clone https://github.com/TencentCloud/tencentcloud-speech-sdk-js.git
-2. cd tencentcloud-speech-sdk-js
+2. cd tencentcloud-speech-sdk-js/asr
 3. 执行 npm install 添加依赖包
 4. 执行 npm run dev 访问 http://localhost:3000/examples/index.html 等各html文件可以看到本地运行demo，获取实时识别结果
    服务端项目部署引用参考 sdk调用方式
@@ -104,6 +104,7 @@
 # sdk 调用方式
 
 1. 参考demo 引入examples/config.js、examples/asrauthentication.js和examples/speechrecognizer.js，需设置用户的SecretID，SecretKey 和 AppId。
+若通过import引入的话，可直接引入 import { WebAudioSpeechRecognizer, SpeechRecognizer } from "speechrecognizer.js" 
 2. 简单版（使用内置录音）
 ```javascript 
     const webAudioSpeechRecognizer = new WebAudioSpeechRecognizer();

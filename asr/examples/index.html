@@ -4,20 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>测试 demo</title>
+    <title>语音识别 Demo</title>
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-<div class="content-box">
-    <div class="content">
-        <div class="content-item left-content">
-            <button class="button" id="start">开始识别</button>
-            <div class="connecting display-none" id="connecting">建立连接中...</div>
-            <span class="recognizing display-none" id="recognizing">识别中...</span>
-            <button class="button end-btn" id="end">结束识别</button>
+<div class="page">
+    <!-- 上区：识别控制 -->
+    <div class="card main-card">
+        <div class="main-left">
+            <h2 class="title">实时语音识别</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="start">开始识别</button>
+                <button class="btn btn-danger display-none" id="end">结束识别</button>
+            </div>
+            <div class="status display-none" id="connecting">
+                <span class="dot dot-pulse"></span> 建立连接中...
+            </div>
+            <div class="status display-none" id="recognizing">
+                <span class="dot dot-green"></span> 识别中
+            </div>
         </div>
-        <div class="content-item">
+        <div class="main-right">
             <div id="recognizeText" class="recognize-content"></div>
+        </div>
+    </div>
+
+    <!-- 下区：上下文 / 热词 -->
+    <div class="card context-card">
+        <div class="context-header">
+            <h3>动态上下文 / 临时热词</h3>
+            <span class="context-tip">开始识别后自动发送一次，也可在识别中途手动发送</span>
+        </div>
+        <div class="context-body">
+            <div class="form-row">
+                <label>hotword_list <span class="label-hint">（格式：词|权重,词|权重）</span></label>
+                <input type="text" id="hotwordList" placeholder="例如：订金|11,胶带|8" />
+            </div>
+            <div class="form-row">
+                <label>prompt 文本 <span class="label-hint">（每行一条，context_type: scene）</span></label>
+                <textarea id="promptText" rows="3" placeholder="例如：&#10;订金的胶带&#10;订金&#10;胶带反应">订金的胶带
+订金
+胶带反应</textarea>
+            </div>
+        </div>
+        <div class="context-footer">
+            <button class="btn btn-primary" id="sendContext" disabled>发送上下文/热词</button>
+            <span id="sendContextTip" class="send-tip"></span>
         </div>
     </div>
 </div>

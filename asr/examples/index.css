@@ -1,51 +1,185 @@
-.content-box .content{
-    width: 100%;
-    overflow: hidden;
-    margin: 100px auto;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
-.content .content-item {
-    width: 50%;
-    float: left;
-    text-align: center;
+body {
+    background: #f4f6f9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #333;
+    min-height: 100vh;
 }
-.left-content {
-    width: 100%;
-    height: 300px;
+.page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
-.connecting {
-    color: #999;
-    margin: 50px 0;
+
+/* 通用卡片 */
+.card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    padding: 28px;
 }
-.recognizing {
-    color: #999;
-    margin: 0 10px;
+
+/* 主卡片：左右两栏 */
+.main-card {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
 }
-.content .content-item .button {
-    background: #187cff;
-    border: 1px solid #478eea;
-    color: #fff;
-    text-align: center;
-    border-radius: 3px;
-    cursor: pointer;
-    width: 160px;
+.main-left {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.main-right {
+    flex: 1;
+}
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.btn {
     height: 40px;
-    margin: 50px 0;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity .15s;
 }
-.button.end-btn {
-    display: none;
+.btn:hover:not(:disabled) {
+    opacity: .85;
+}
+.btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+.btn-primary {
+    background: #187cff;
+    color: #fff;
+}
+.btn-danger {
+    background: #ff4d4f;
+    color: #fff;
+}
+.status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #888;
+}
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dot-green {
+    background: #52c41a;
+}
+.dot-pulse {
+    background: #187cff;
+    animation: pulse 1s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
 }
 .recognize-content {
-    height: 200px;
-    width: 360px;
-    background-color: #eee;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    margin: auto;
-    text-align: left;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow: scroll;
+    width: 100%;
+    min-height: 160px;
+    max-height: 260px;
+    background: #f8f9fb;
+    border: 1px solid #e8eaed;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
+
+/* 上下文卡片 */
+.context-card {}
+.context-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.context-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+}
+.context-tip {
+    font-size: 12px;
+    color: #aaa;
+}
+.context-body {
+    display: flex;
+    gap: 20px;
+}
+.form-row {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.form-row label {
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+}
+.label-hint {
+    font-weight: 400;
+    color: #aaa;
+}
+.form-row input,
+.form-row textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color .15s;
+    font-family: inherit;
+}
+.form-row input:focus,
+.form-row textarea:focus {
+    border-color: #187cff;
+}
+.context-footer {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.context-footer .btn {
+    width: 160px;
+}
+.send-tip {
+    font-size: 12px;
+    color: #888;
+    word-break: break-all;
+    flex: 1;
+}
+
 .display-none {
-    display: none;
+    display: none !important;
 }

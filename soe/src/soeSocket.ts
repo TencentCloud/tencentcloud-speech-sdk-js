@@ -81,6 +81,7 @@ export default class SoeNewConnect {
           if (response.final === 1) {
             this.isRecognizeComplete = true;
             this.OnEvaluationComplete(response);
+            this.close();
             return;
           }
           if (response.result) {

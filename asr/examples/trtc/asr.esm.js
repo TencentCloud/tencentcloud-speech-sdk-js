@@ -106,10 +106,12 @@ class ASR {
     // 识别结束
     this.speechRecognizer.OnRecognitionComplete = (res) => {
       this.OnRecognitionComplete(res);
+      this.speechRecognizer = null;
     };
     // 识别错误
     this.speechRecognizer.OnError = (res) => {
       this.isCanSendData = false;
+      this.speechRecognizer = null;
       this.OnError(res);
     };
 

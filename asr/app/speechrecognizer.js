@@ -222,6 +222,25 @@ export class SpeechRecognizer {
     close() {
         this.socket && this.socket.readyState === 1 && this.socket.close(1000);
     }
+    writeContent(contextPrompt) {
+        try {
+            if (!this.socket || this.socket.readyState !== 1) {
+                this.isLog && console.log(this.requestId, 'writeContent failed: websocket not open', TAG);
+                return false;
+            }
+            if (!contextPrompt || typeof contextPrompt !== 'object') {
+                this.isLog && console.log(this.requestId, 'writeContent failed: invalid contextPrompt', TAG);
+                return false;
+            }
+            const jsonData = JSON.stringify(contextPrompt);
+            this.socket.send(jsonData);
+            this.isLog && console.log(this.requestId, 'writeContent send', jsonData, TAG);
+            return true;
+        } catch (e) {
+            this.isLog && console.log(this.requestId, 'writeContent error catch', e, TAG);
+            return false;
+        }
+    }
     // 发送数据
     write(data) {
         try {

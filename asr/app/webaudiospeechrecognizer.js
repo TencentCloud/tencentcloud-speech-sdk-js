@@ -1,7 +1,7 @@
 import WebRecorder from "./webrecorder.js";
 import { SpeechRecognizer, guid } from "./speechrecognizer.js";
 
-export default class WebAudioSpeechRecognizer {
+export class WebAudioSpeechRecognizer {
   constructor(params, isLog) {
     this.params = params;
     this.recorder = null;
@@ -86,6 +86,13 @@ export default class WebAudioSpeechRecognizer {
     if (this.recorder) {
       this.recorder.stop();
     }
+  }
+  // 发送上下文/临时热词（透传给 SpeechRecognizer.writeContent）
+  writeContent(contextPrompt) {
+    if (this.speechRecognizer) {
+      return this.speechRecognizer.writeContent(contextPrompt);
+    }
+    return false;
   }
   destroyStream() {
     this.isLog && console.log('destroyStream function is click', this.recorder);

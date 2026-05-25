@@ -59,7 +59,7 @@ export class SoeNewCredential {
     params["timestamp"] = Math.round(time / 1000);
     params["expired"] = Math.round(time / 1000) + 24 * 60 * 60;
     params["nonce"] = Math.round(time / 100000);
-    params["voice_id"] = this.query.voice_id;
+    params["voice_id"] = this.query.voice_id || guid();
     params["eval_mode"] = this.query.eval_mode || 0;
     params["score_coeff"] = this.query.score_coeff || 1.0;
     this.config.token && (params["token"] = this.config.token);
