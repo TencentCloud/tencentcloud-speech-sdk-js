@@ -126,7 +126,101 @@ WebRecorder类 提供start()、stop()方法、OnReceivedData()和OnError()事件
 2. examples/asrauthentication.js 为鉴权函数，如需自己鉴权，直接覆盖就可
 
 
-# 详细说明及示例
+# 实时语音识别 2.0 接入示例
+实时语音识别 2.0 基于 `asr/v2` 接口，说明：
+1. 识别结果通过 `OnRecognitionSentences` 统一回调透传，返回 `sentences.sentence_list` 数组，每个元素包含 `sentence_id`（句子标识）、`sentence_type`（0 非稳态实时刷新，1 稳态定稿）、`sentence`（识别文本）等字段。
+2. 对应源码为 `app/speechrecognizerv2.js`、`app/webaudiospeechrecognizerv2.js`，示例参考 `examples/speechrecognizerv2.js`、`examples/speechrecognizerv2.html`。
+
+若通过 import 引入：`import { WebAudioSpeechRecognizerV2, SpeechRecognizerV2 } from "speechrecognizerv2.js"`
+
+1. SpeechRecognizerV2 类（自定义数据源）
+```javascript 
+    // 实例化类 requestId, isLog为可选参数，requestId为本地调试时本地唯一的id，isLog为布尔值，为true时打印本地日志。
+const params = {
+   secretid: config.secretId,
+   secretkey: config.secretKey,
+   appid: config.appId,
+   engine_model_type: '16k_zh_en_speaker',
+   // host: 'asr.cloud.tencent.com', // 可选，指定连接 host，签名始终用默认域名
+};
+const speechRecognizerV2 = new SpeechRecognizerV2(params, requestId, isLog);
+
+// 开始识别(此时连接已经建立)
+speechRecognizerV2.OnRecognitionStart = (res) => {
+   console.log('开始识别', res)
+}
+// 句子识别结果回调（透传 socket 消息，含 sentences.sentence_list）
+speechRecognizerV2.OnRecognitionSentences = (res) => {
+   console.log('识别结果', res)
+}
+// 识别结束
+speechRecognizerV2.OnRecognitionComplete = (res) => {
+   console.log('识别结束', res)
+}
+// 识别错误
+speechRecognizerV2.OnError = (res) => {
+   console.log('识别失败', res)
+}
+
+// 建立websocket连接
+speechRecognizerV2.start();
+
+// 连接建立成功后发送数据（此过程应该是一个连续的过程）
+speechRecognizerV2.write(data);
+
+// 可选：识别过程中动态传入上下文提示
+speechRecognizerV2.writeContent(contextPrompt);
+
+// 断开连接
+speechRecognizerV2.stop();
+```  
+
+2. WebAudioSpeechRecognizerV2 类（使用内置录音）
+```javascript 
+    // 实例化类 isLog为可选参数，类型为布尔值，当isLog为true时，打印本地日志。
+const webAudioSpeechRecognizerV2 = new WebAudioSpeechRecognizerV2(params, isLog);
+
+// 开始识别(此时连接已经建立)
+webAudioSpeechRecognizerV2.OnRecognitionStart = (res) => {
+   console.log('开始识别', res)
+}
+// 句子识别结果回调
+webAudioSpeechRecognizerV2.OnRecognitionSentences = (res) => {
+   const list = res.sentences && res.sentences.sentence_list;
+   (list || []).forEach((item) => {
+      // item.sentence_id 句子标识，item.sentence_type 0非稳态/1稳态，item.speaker_id 说话人，item.sentence 文本
+      console.log(item);
+   });
+}
+// 识别结束
+webAudioSpeechRecognizerV2.OnRecognitionComplete = (res) => {
+   console.log('识别结束', res)
+}
+// 识别错误
+webAudioSpeechRecognizerV2.OnError = (res) => {
+   console.log('识别失败', res)
+}
+// 录音停止
+webAudioSpeechRecognizerV2.OnRecorderStop = (res) => {
+   console.log('录音停止', res)
+}
+
+// 建立录音同时建立websocket连接
+webAudioSpeechRecognizerV2.start();
+
+// 可选：识别过程中动态传入上下文提示
+webAudioSpeechRecognizerV2.writeContent(contextPrompt);
+
+// 断开连接
+webAudioSpeechRecognizerV2.stop();
+
+// 调用stop方法后不会主动关闭通道，如果需要关闭通道的话，可以调用destroyStream方法
+if (webAudioSpeechRecognizerV2) {
+    webAudioSpeechRecognizerV2.destroyStream();
+}
+```
+
+# 详细说明及示例（1.0）
 示例写法采用es6写法，若要兼容低版本浏览器，需要按照ES5语法书写。
 1. WebRecorder 类，采集浏览器音频数据
 ```javascript 
@@ -138,7 +232,7 @@ recorder.OnReceivedData = (res) => {
    console.log(res);
 };
 // 采集音频出错
-recorder.OnError() = (err) => {
+recorder.OnError = (err) => {
    console.log(err)
 }
 
@@ -153,9 +247,9 @@ recorder.stop();
     // 实例化类 requestId, isLog为可选参数，requestId为本地调试时本地唯一的id,isLog为布尔值，为true时，打印本地日志。
 const speechRecognizer = new SpeechRecognizer(params, requestId, isLog);
 
-if (// 可以开始识别了) { // 此处需要判断是否建立连接成功，可在 OnRecognitionStart 回调中加标识判断
+if ("可以开始识别了") { // 此处需要判断是否建立连接成功，可在 OnRecognitionStart 回调中加标识判断
         // 发送数据 (此过程应该是一个连续的过程)
-        speechRecognizer.write(data);
+   speechRecognizer.write(data)
 }
 // 开始识别(此时连接已经建立)
 speechRecognizer.OnRecognitionStart = (res) => {
@@ -185,8 +279,11 @@ speechRecognizer.OnError = (res) => {
 // 建立websocket连接
 speechRecognizer.start();
 
+// 可选：识别过程中动态传入上下文提示
+speechRecognizer.writeContent(contextPrompt);
+
 // 断开连接
-if (连接已经建立...) {
+if ("连接已经建立...") {
    speechRecognizer.stop();
 }
 ```  
@@ -224,8 +321,11 @@ webAudioSpeechRecognizer.OnError = (res) => {
 // 建立录音同时建立websocket连接
 webAudioSpeechRecognizer.start();
 
+// 可选：识别过程中动态传入上下文提示
+webAudioSpeechRecognizer.writeContent(contextPrompt);
+
 // 断开连接
-if (连接已经建立...) {
+if ("连接已经建立...") {
    webAudioSpeechRecognizer.stop();
 }   
 
@@ -236,5 +336,5 @@ if (webAudioSpeechRecognizer) {
 
 ```
 
-具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/tree/main/examples) 目录，该目录下包含各语音服务的示例代码。
+具体参见 [examples](https://github.com/TencentCloud/tencentcloud-speech-sdk-js/tree/main/asr/examples) 目录，该目录下包含各语音服务的示例代码。
 

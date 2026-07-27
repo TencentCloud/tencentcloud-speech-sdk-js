@@ -1,7 +1,7 @@
 import '../examples/lib/cryptojs.js';
 
 // 识别需要过滤的参数
-const needFiltrationParams = ['appid', 'secretkey', 'signCallback', 'echoCancellation'];
+const needFiltrationParams = ['appid', 'secretkey', 'signCallback', 'echoCancellation', 'host'];
 
 function formatSignString(query, params){
     let strParam = "";
@@ -83,6 +83,11 @@ async function getUrl(self, params) {
     }
     return `wss://${queryStr}&signature=${encodeURIComponent(signature)}`;
 }
+// 用签名后的 URL 替换连接 host（签名原文 host 不变，实际连接 host 由 params.host 指定）
+function applyHostOverride(url, host) {
+    if (!host) return url;
+    return url.replace(/^wss:\/\/[^/]+/, `wss://${host}`);
+}
 /** 获取签名 start */
 
 function toUint8Array(wordArray) {
@@ -151,11 +156,12 @@ export class SpeechRecognizer {
             this.OnError('鉴权失败');
             return
         }
-        this.isLog && console.log(this.requestId, 'get ws url', url, TAG);
+        const finalUrl = applyHostOverride(url, this.query.host);
+        this.isLog && console.log(this.requestId, 'get ws url', finalUrl, TAG);
         if ('WebSocket' in window) {
-            this.socket = new WebSocket(url);
+            this.socket = new WebSocket(finalUrl);
         } else if ('MozWebSocket' in window) {
-            this.socket = new MozWebSocket(url);
+            this.socket = new MozWebSocket(finalUrl);
         } else {
             this.isLog && console.log(this.requestId, '浏览器不支持WebSocket', TAG);
             this.OnError('浏览器不支持WebSocket');
@@ -180,7 +186,11 @@ export class SpeechRecognizer {
                         this.isSignSuccess = true;
                     }
                     if (response.final === 1) {
+                        this.isRecognizeComplete = true;
                         this.OnRecognitionComplete(response);
+                        if (this.socket && this.socket.readyState === 1) {
+                            this.socket.close(1000);
+                        }
                         return;
                     }
                     if (response.result) {
@@ -205,6 +215,9 @@ export class SpeechRecognizer {
         };
         this.socket.onerror = (e) => { // 通信发生错误时触发
             this.isLog && console.log(this.requestId, 'socket error callback', e, TAG);
+            if (this.isRecognizeComplete) {
+                return;
+            }
             this.socket.close();
             this.OnError(e);
         }

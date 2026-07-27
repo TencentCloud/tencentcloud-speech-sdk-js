@@ -35,7 +35,7 @@ $(function () {
     secretkey: config.secretKey,
     appid: config.appId,
     // token: config.token,
-    engine_model_type : '16k_zh_test',
+    engine_model_type : '16k_zh',
     // voice_format : 1,
     // hotword_id : '08003a00000000000000000000000000',
     // needvad: 1,

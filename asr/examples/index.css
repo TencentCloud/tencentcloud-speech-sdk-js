@@ -183,3 +183,12 @@ body {
 .display-none {
     display: none !important;
 }
+
+/* 句子模式：非稳态灰色，稳态黑色 */
+.sentence-line {
+    color: #999;
+    margin-bottom: 4px;
+}
+.sentence-line.sentence-stable {
+    color: #1a1a1a;
+}
